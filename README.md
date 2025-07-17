@@ -126,20 +126,23 @@ It's recommended to test multiple configurations and compare performance results
 3. **Permission Issues**: Ensure script has execute permissions (`chmod +x`)
 4. **Insufficient Memory**: Reduce compilation thread count or increase system memory
 
+Example for DSE on CoreMark:
+
+```bash
+make clean
+make verilog
+make sim-verilog CONFIG=MinimalConfig
+make emu CONFIG=MinimalConfig EMU_THREADS=2 -j32
+./build/emu -b 0 -e 0 -i ./ready-to-run/coremark-2-iteration.bin --diff ./ready-to-run/riscv64-nemu-interpreter-so
+```
+
+
 ## Contact Information
 
 For questions or suggestions, please contact: Wenhao Sun 
 ### Run with simulator
 
 
-Example for DSE on CoreMark:
-
-```bash
-make verilog
-make clean
-make sim-verilog CONFIG=MinimalConfig
-make emu CONFIG=MinimalConfig EMU_THREADS=2 -j32
-```
 
 ## Troubleshooting Guide
 
