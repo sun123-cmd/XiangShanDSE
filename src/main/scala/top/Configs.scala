@@ -219,7 +219,8 @@ class MinimalConfig(n: Int = 1) extends Config(
       val tiles = site(XSTileKey)
       up(SoCParamsKey).copy(
         L3CacheParamsOpt = Option.when(!up(EnableCHI))(up(SoCParamsKey).L3CacheParamsOpt.get.copy(
-          sets = 1024,
+          // Change L3 cache size, 1024 stand for 512k LLC, by Wenhao Sun
+          sets = 2048,
           inclusive = false,
           clientCaches = tiles.map{ core =>
             val clientDirBytes = tiles.map{ t =>
