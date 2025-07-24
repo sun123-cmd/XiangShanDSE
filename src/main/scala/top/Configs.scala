@@ -36,6 +36,7 @@ import device.EnableJtag
 import huancun._
 import coupledL2._
 import coupledL2.prefetch._
+import freechips.rocketchip.subsystem.{SystemBusKey, MemoryBusKey, PeripheryBusKey}
 
 class BaseConfig(n: Int) extends Config((site, here, up) => {
   case XLen => 64
@@ -219,7 +220,8 @@ class MinimalConfig(n: Int = 1) extends Config(
       val tiles = site(XSTileKey)
       up(SoCParamsKey).copy(
         L3CacheParamsOpt = Option.when(!up(EnableCHI))(up(SoCParamsKey).L3CacheParamsOpt.get.copy(
-          sets = 1024,
+          // Change L3 cache size, 1024 stand for 512k LLC, by Wenhao Sun
+          sets = 2048,
           inclusive = false,
           clientCaches = tiles.map{ core =>
             val clientDirBytes = tiles.map{ t =>
@@ -459,10 +461,15 @@ class FuzzConfig(dummy: Int = 0) extends Config(
 )
 
 class DefaultConfig(n: Int = 1) extends Config(
-  L3CacheConfig("16MB", inclusive = false, banks = 4, ways = 16)
+  // Change L3 Cache size to 8MB, by Wenhao Sun
+  //  L3CacheConfig("1MB", inclusive = false, banks = 4, ways = 16)
+  L3CacheConfig("8MB", inclusive = false, banks = 1, ways = 8)
     ++ L2CacheConfig("1MB", inclusive = true, banks = 4)
     ++ WithNKBL1D(64, ways = 4)
     ++ new BaseConfig(n)
+    ++ new WithSystemBusFrequency(1000.0)  // 固定系统总线频率为1GHz
+    ++ new WithMemoryBusFrequency(1000.0)  // 固定内存总线频率为1GHz
+    ++ new WithPeripheryBusFrequency(1000.0)  // 固定外设总线频率为1GHz
 )
 
 class CVMConfig(n: Int = 1) extends Config(
@@ -565,3 +572,16 @@ class FpgaDiffMinimalConfig(n: Int = 1) extends Config(
     )
   })
 )
+
+// 总线频率配置类
+class WithSystemBusFrequency(freqMHz: Double) extends Config((site, here, up) => {
+  case SystemBusKey => up(SystemBusKey, site).copy(dtsFrequency = Some(BigInt((freqMHz * 1e6).round)))
+})
+
+class WithMemoryBusFrequency(freqMHz: Double) extends Config((site, here, up) => {
+  case MemoryBusKey => up(MemoryBusKey, site).copy(dtsFrequency = Some(BigInt((freqMHz * 1e6).round)))
+})
+
+class WithPeripheryBusFrequency(freqMHz: Double) extends Config((site, here, up) => {
+  case PeripheryBusKey => up(PeripheryBusKey, site).copy(dtsFrequency = Some(BigInt((freqMHz * 1e6).round)))
+})

@@ -61,20 +61,17 @@ The micro-architecture overview of Kunminghu (昆明湖) is shown below.
 Some of the key directories are shown below.
 
 ```
-.
-├── src
-│   └── main/scala         # design files
-│       ├── device         # virtual device for simulation
-│       ├── system         # SoC wrapper
-│       ├── top            # top module
-│       ├── utils          # utilization code
-│       └── xiangshan      # main design code
-│           └── transforms # some useful firrtl transforms
-├── scripts                # scripts for agile development
-├── fudian                 # floating unit submodule of XiangShan
-├── huancun                # L2/L3 cache submodule of XiangShan
-├── difftest               # difftest co-simulation framework
-└── ready-to-run           # pre-built simulation images
+git clone https://github.com/OpenXiangShan/XiangShan.git
+cd XiangShan/
+export NOOP_HOME=$(pwd)
+#复位到指定ID，以及改相关硬件
+git reset --hard xxxxxx
+make init
+#dramsim3目前可以使用我的或者自己编，单双通道可在运行时配置
+python3 ./scripts/xiangshan.py --build --dramsim3 /nfs/home/zhangyuxin/spec_test/0218_spec_test/DRAMsim3 --with-dramsim3 --threads 16 --config KunminghuV2Config
+#xiangshan_DDR4_8Gb_x8_3200_1ch_xmp为单通道，xiangshan_DDR4_8Gb_x8_3200_2ch_xmp为双通道
+./build/emu --dramsim3-ini /nfs/home/zhangyuxin/spec_test/0218_spec_test/DRAMsim3/configs/xiangshan_DDR4_8Gb_x8_3200_1ch_xmp.ini --no-diff -i /nfs/home/zhangyuxin/temp/am_temp/am_new_for_pldm/nexus-am/apps/mem_test/mem_test_bw/build/mem_test_bw-riscv64-xs.bin >latency.log 2> perf.log
+
 ```
 
 ## IDE Support

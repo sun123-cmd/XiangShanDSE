@@ -1,0 +1,22 @@
+emu compiled at Jul 23 2025, 15:47:46
+Using seed = 3266
+Using simulated 32768B flash
+Core  0's Commit SHA is: e9f6ee7644, dirty: 1
+Using simulated 8386560MB RAM
+The image is /nfs/home/share/jiaxiaoyu/simpoint_checkpoint_archive/spec06_rv64gcb_O3_20m_gcc12.2.0-intFpcOff-jeMalloc/checkpoint-0-0-0/libquantum/64624/_64624_0.243160_.gz
+Gzip file detected and loading image from extracted gz file
+DRAMSIM3 config: /nfs/home/zhangyuxin/spec_test/0218_spec_test/DRAMsim3/configs/xiangshan_DDR4_8Gb_x8_3200_1ch_xmp.ini
+DRAMSIM3 outdir: /nfs/home/sunwenhao/XiangShan/build
+CPU_FREQ: 3000 DRAM_FREQ: 1600
+CPU_CLOCK_CYCLE: 0.000333333 DRAM_CLOCK_CYCLE: 0.000625
+DRAMsim3 memory system initialized.
+The reference model is /nfs/home/sunwenhao/XiangShan/ready-to-run/riscv64-nemu-interpreter-so
+[FORK_INFO pid(3359812)] enable fork debugging...
+The first instruction of core 0 has commited. Difftest enabled. 
+Warmup finished. The performance counters will be dumped and then reset.
+[FORK_INFO pid(3359812)] clear processes...
+Core 0: [33mEXCEEDING CYCLE/INSTR LIMIT at pc = 0x12cb0
+[0m[35mCore-0 instrCnt = 20,006, cycleCnt = 30,890, IPC = 0.647653
+[0m[34mSeed=3266 Guest cycle spent: 30,895 (this will be different from cycleCnt if emu loads a snapshot)
+[0m[34mHost time spent: 32,919ms
+[0m
