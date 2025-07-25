@@ -104,7 +104,7 @@ if [ "$COMPLETE_MODE" = true ]; then
   },
   "h264ref_foreman.baseline": {
     "points": {
-      "7969": 1.0
+      "10070": 1.0
     }
   },
   "omnetpp": {
@@ -170,7 +170,7 @@ else
   },
   "h264ref_foreman.baseline": {
     "points": {
-      "7969": 0.0266103
+      "10070": 0.0266103
     }
   },
   "omnetpp": {
