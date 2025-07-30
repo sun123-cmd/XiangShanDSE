@@ -35,26 +35,16 @@ threads=2              # 并发线程数：2
 #### 3.2.1 完整SPEC2006 INT测试
 ```bash
 # 运行所有12个INT基准测试
-./test-all-spec-int.sh
+nohup ./cr-run.sh > output.log 2>&1 &
 ```
 
-#### 3.2.2 大规模测试验证
-```bash
-# 验证大规模测试参数
-./test-large-scale-validation.sh
-```
 
-#### 3.2.3 停止当前测试
+#### 3.2.2 停止当前测试
 ```bash
 # 停止所有测试进程
 ./stop-current-test.sh
 ```
 
-#### 3.2.4 计算SPEC分数
-```bash
-# 自动提取结果并计算分数
-./calculate-spec-score.sh
-```
 
 ### 3.3 测试流程
 1. **环境准备**: 设置NOOP_HOME和NEMU_HOME环境变量
@@ -91,10 +81,9 @@ SPEC分数 = (分数1 × 分数2 × ... × 分数n)^(1/n)
 ## 5. SPEC分数计算依据
 
 ### 5.1 基于IPC的SPEC分数估算
-由于我们没有官方参考机器的运行时间，我们使用IPC（Instructions Per Cycle）比值来估算SPEC分数：
 
 ```
-估算SPEC分数 = 测试机器IPC / 参考机器IPC
+估算SPEC分数 = 参考机器time / 测试机器time
 ```
 
 ### 5.2 权重计算
