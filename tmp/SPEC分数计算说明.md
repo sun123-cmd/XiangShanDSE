@@ -22,38 +22,25 @@ SPEC（Standard Performance Evaluation Corporation）分数是衡量计算机性
 
 ## 3. 测试方法与运行步骤
 
-### 3.1 测试参数配置
-```bash
-# 大规模测试参数（推荐）
-warmup_inst=50000      # 预热指令数：50K
-max_inst=500000        # 最大指令数：500K
-threads=2              # 并发线程数：2
-```
 
-### 3.2 运行方法
+### 3.1 运行方法
 
-#### 3.2.1 完整SPEC2006 INT测试
+#### 3.1.1 完整SPEC2006测试
 ```bash
-# 运行所有12个INT基准测试
 nohup ./cr-run.sh > output.log 2>&1 &
 ```
 
+#### 3.1.2 监控当前测试
 
-#### 3.2.2 停止当前测试
 ```bash
-# 停止所有测试进程
-./stop-current-test.sh
+./monitor_results.sh
 ```
 
-
-### 3.3 测试流程
-1. **环境准备**: 设置NOOP_HOME和NEMU_HOME环境变量
-2. **参数配置**: 设置warmup_inst、max_inst、threads等参数
-3. **清理进程**: 停止之前的测试进程
-4. **创建配置**: 生成包含所有基准测试的JSON配置文件
-5. **启动测试**: 运行xs_autorun_multiServer.py
-6. **监控进度**: 实时监控测试进度和系统资源
-7. **结果分析**: 提取IPC值并计算SPEC分数
+#### 3.1.3 停止当前测试
+```bash
+# 停止所有测试进程
+./kill_all_tasks.sh
+```
 
 ## 4. 分数计算公式
 
@@ -113,149 +100,31 @@ total_weight = Σ(weight_i)
 average_ipc = total_weighted_ipc / total_weight
 ```
 
-### 5.4 不同参考机器的SPEC分数估算
-| 参考机器IPC | 估算SPEC分数 | 性能评价 |
-|-------------|-------------|----------|
-| 0.5 | 3.34 | 优秀 |
-| 0.8 | 2.09 | 优秀 |
-| 1.0 | 1.67 | 优秀 |
-| 1.2 | 1.39 | 良好 |
-| 1.5 | 1.11 | 良好 |
-| 2.0 | 0.84 | 一般 |
+# 6 常见问题
 
-## 6. 具体计算步骤
+## 6.1 Error 127
+* 问题来源：ssh到新机器后，原始设置的临时环境变量缺失
+* 解决方案：
+修改本地`   bashrc`为：
+```
+export NOOP_HOME=/nfs/home/sunwenhao/XiangShan
+export NEMU_HOME=/nfs/home/sunwenhao/XiangShan/NEMU
+export AM_HOME=/nfs/home/sunwenhao/XiangShan/nexus-am
+export DRAMSIM3_HOME=/nfs/home/sunwenhao/XiangShan/DRAMsim3
+export PATH=$NOOP_HOME/build:$PATH
+export LD_LIBRARY_PATH=$NOOP_HOME/build:$LD_LIBRARY_PATH
+```
+同时，修改`bash_profile`为：
 
-### 6.1 自动提取测试结果
-```bash
-# 从测试结果文件中自动提取IPC值
-for test_name in "${!test_mapping[@]}"; do
-    output_file="$TEST_DIR/$test_name/simulator_out.txt"
-    ipc_line=$(grep "IPC = " "$output_file" | tail -1)
-    if [[ $ipc_line =~ IPC[[:space:]]*=[[:space:]]*([0-9.]+) ]]; then
-        ipc=${BASH_REMATCH[1]}
-        actual_results[$benchmark]=$ipc
-    fi
-done
+```
+if [ -f ~/.bashrc ]; then
+    source ~/.bashrc
+fi
 ```
 
-### 6.2 计算加权平均IPC
-```bash
-# 计算每个基准测试的加权贡献
-for benchmark in "${!spec_weights[@]}"; do
-    ipc=${actual_results[$benchmark]}
-    weight=${spec_weights[$benchmark]}
-    weighted_ipc=$(echo "$ipc * $weight" | bc -l)
-    total_weighted_ipc=$(echo "$total_weighted_ipc + $weighted_ipc" | bc -l)
-done
+这样在加载ssh连接时，可以同步设置本地的环境变量到其他ssh节点
 
-# 计算平均IPC
-average_ipc=$(echo "$total_weighted_ipc / $total_weight" | bc -l)
-```
+## 6.2 Error 255
 
-### 6.3 估算SPEC分数
-```bash
-# 基于不同参考机器IPC估算SPEC分数
-for ref_ipc in 0.5 0.8 1.0 1.2 1.5 2.0; do
-    spec_score=$(echo "$average_ipc / $ref_ipc" | bc -l)
-    echo "参考IPC=$ref_ipc, SPEC分数=$spec_score"
-done
-```
-
-## 7. SPEC2006基准程序列表
-
-
-
-## 8. 实际测试结果案例
-
-### 8.1 大规模测试结果（500K指令）
-基于XiangShan处理器的实际测试结果：
-
-| 基准测试 | IPC | 权重 | 加权IPC | 性能评价 |
-|----------|-----|------|---------|----------|
-| **hmmer** | 3.907197 | 0.3 | 1.1721591 | ⭐⭐⭐⭐⭐ 卓越 |
-| **libquantum** | 3.026964 | 0.3 | 0.9080892 | ⭐⭐⭐⭐⭐ 优秀 |
-| **perlbench** | 2.048873 | 0.4 | 0.8195492 | ⭐⭐⭐⭐ 良好 |
-| **xalancbmk** | 1.750391 | 0.3 | 0.5251173 | ⭐⭐⭐⭐ 良好 |
-| **bzip2** | 1.459425 | 0.4 | 0.5837700 | ⭐⭐⭐⭐ 良好 |
-| **astar** | 1.201597 | 0.3 | 0.3604791 | ⭐⭐⭐⭐ 良好 |
-| **gobmk** | 1.206485 | 0.3 | 0.3619455 | ⭐⭐⭐⭐ 良好 |
-| **sjeng** | 1.123444 | 0.3 | 0.3370332 | ⭐⭐⭐⭐ 良好 |
-| **omnetpp** | 0.653361 | 0.3 | 0.1960083 | ⭐⭐⭐ 一般 |
-| **mcf** | 0.266756 | 0.3 | 0.0800268 | ⭐⭐ 较低 |
-
-### 8.2 性能分析
-- **平均IPC**: 1.67
-- **最高IPC**: hmmer (3.91) - 量子计算模拟
-- **最低IPC**: mcf (0.27) - 组合优化问题
-- **测试完成率**: 91.7% (10/12基准测试)
-
-### 8.3 SPEC分数估算结果
-| 参考机器IPC | 估算SPEC分数 | 性能评价 |
-|-------------|-------------|----------|
-| 0.5 | 3.34 | ⭐⭐⭐⭐⭐ 优秀 |
-| 0.8 | 2.09 | ⭐⭐⭐⭐⭐ 优秀 |
-| 1.0 | 1.67 | ⭐⭐⭐⭐⭐ 优秀 |
-| 1.2 | 1.39 | ⭐⭐⭐⭐ 良好 |
-| 1.5 | 1.11 | ⭐⭐⭐⭐ 良好 |
-| 2.0 | 0.84 | ⭐⭐⭐ 一般 |
-
-## 9. 频率归一化
-
-SPEC分数通常按频率进行归一化：
-```
-SPEC/GHz = SPEC分数 / CPU频率(GHz)
-```
-
-这样可以比较不同频率CPU的性能。
-
-## 10. 测试规模对比
-
-### 10.1 小规模测试 vs 大规模测试
-| 参数 | 小规模测试 | 大规模测试 | 改进 |
-|------|------------|------------|------|
-| 预热指令 | 2K | 50K | 25倍 |
-| 测试指令 | 20K | 500K | 25倍 |
-| 平均IPC | 0.36 | 1.67 | 464% |
-| 测试时间 | 5分钟 | 30分钟 | 6倍 |
-| 统计可靠性 | 一般 | 优秀 | 显著提升 |
-
-### 10.2 测试效率
-- **小规模测试**: 快速验证，适合开发调试
-- **大规模测试**: 高精度评估，适合性能发布
-
-## 11. 注意事项
-
-1. **完整性**: 必须运行所有基准程序才能获得有效的SPEC分数
-2. **准确性**: 运行时间必须准确测量，包括所有开销
-3. **一致性**: 测试环境必须保持一致
-4. **频率**: 需要记录测试时的CPU频率
-5. **权重**: 某些测试可能使用SimPoint技术，需要按权重计算
-6. **预热**: 充分的预热指令数对获得稳定结果至关重要
-7. **规模**: 足够的测试指令数确保统计可靠性
-
-## 12. 最佳实践
-
-### 12.1 测试参数推荐
-```bash
-# 开发调试阶段
-warmup_inst=2000      # 2K预热指令
-max_inst=20000        # 20K测试指令
-threads=2             # 2线程
-
-# 性能评估阶段
-warmup_inst=50000     # 50K预热指令
-max_inst=500000       # 500K测试指令
-threads=2             # 2线程
-```
-
-### 12.2 测试流程
-1. **环境准备**: 设置环境变量，清理进程
-2. **参数验证**: 使用小规模测试验证配置
-3. **大规模测试**: 运行完整SPEC2006 INT测试
-4. **结果分析**: 自动提取IPC并计算分数
-5. **报告生成**: 生成详细的性能报告
-
-### 12.3 故障排除
-- **进程卡死**: 使用`stop-current-test.sh`停止测试
-- **结果缺失**: 检查checkpoint文件路径
-- **性能异常**: 验证测试参数和系统负载 
+* 问题来源：有时ssh连接超时会断
+* 解决方案：设置鲁棒ssh，参考`cr-run.sh`中的鲁棒ssh选项，同时修改`./perf/server.py`，ssh断后自动重连
