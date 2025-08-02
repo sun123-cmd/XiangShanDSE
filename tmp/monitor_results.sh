@@ -1,6 +1,6 @@
 #!/bin/bash
 
-RESULT_DIR="tmp/result"
+RESULT_DIR="result"
 LOG_FILE="monitoring.log"
 COMPLETED_FILE="completed_tests.txt"
 
