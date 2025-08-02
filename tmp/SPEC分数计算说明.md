@@ -13,7 +13,7 @@ SPEC（Standard Performance Evaluation Corporation）分数是衡量计算机性
 - **模拟器**: XiangShan emu模拟器
 - **参考模型**: NEMU解释器
 - **内存模拟**: DRAMsim3
-- **测试平台**: Linux系统
+- **测试平台**: 开芯院小机房服务器
 
 ### 2.2 核心工具
 - **xs_autorun_multiServer.py**: 自动化测试脚本
