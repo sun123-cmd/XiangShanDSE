@@ -128,3 +128,9 @@ fi
 
 * 问题来源：有时ssh连接超时会断
 * 解决方案：设置鲁棒ssh，参考`cr-run.sh`中的鲁棒ssh选项，同时修改`./perf/server.py`，ssh断后自动重连
+
+## 6.3 No numactl
+
+* 问题来源： node06服务器上没有配置numactl的环境
+
+* 解决方案：`cr-run.sh`脚本中删掉node06服务器
