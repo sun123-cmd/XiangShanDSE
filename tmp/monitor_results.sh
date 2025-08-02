@@ -1,8 +1,9 @@
 #!/bin/bash
 
-RESULT_DIR="result"
+RESULT_DIR="tmp/result"
 LOG_FILE="monitoring.log"
 COMPLETED_FILE="completed_tests.txt"
+TOTAL_TESTS=1169  # 总测试项数量
 
 # 创建记录文件
 touch "$COMPLETED_FILE"
@@ -75,7 +76,7 @@ check_completed_tests() {
 
 # 显示统计信息
 show_statistics() {
-    local total_tests=$(find "$RESULT_DIR" -name "simulator_out.txt" 2>/dev/null | wc -l)
+    local started_tests=$(find "$RESULT_DIR" -name "simulator_out.txt" 2>/dev/null | wc -l)
     local completed_tests=$([ -f "$COMPLETED_FILE" ] && wc -l < "$COMPLETED_FILE" || echo 0)
     local error_tests=$(find "$RESULT_DIR" -name "simulator_err.txt" -size +0 2>/dev/null | while read -r file; do
         # 检查是否有真正的错误（排除[PERF ]开头的行）
@@ -86,11 +87,13 @@ show_statistics() {
     local running_tests=$(ps aux | grep -c "[e]mu.*--diff" || echo 0)
     
     echo "📈 统计信息 [$(date '+%H:%M:%S')]"
-    echo "   已启动测试: $total_tests"
+    echo "   总测试项: $TOTAL_TESTS"
+    echo "   已启动: $started_tests"
     echo "   已完成: $completed_tests"
     echo "   有错误: $error_tests"
     echo "   正在运行: $running_tests"
-    echo "   完成率: $([ $total_tests -gt 0 ] && echo "scale=1; $completed_tests * 100 / $total_tests" | bc || echo "0")%"
+    echo "   启动率: $([ $TOTAL_TESTS -gt 0 ] && echo "scale=1; $started_tests * 100 / $TOTAL_TESTS" | bc || echo "0")%"
+    echo "   完成率: $([ $TOTAL_TESTS -gt 0 ] && echo "scale=1; $completed_tests * 100 / $TOTAL_TESTS" | bc || echo "0")%"
     
     # 显示所有出错的测试项（排除[PERF ]开头的行）
     if [ $error_tests -gt 0 ]; then
@@ -117,14 +120,14 @@ while true; do
         show_statistics
         
         # 检查是否所有测试都完成了
-        total_tests=$(find "$RESULT_DIR" -name "simulator_out.txt" 2>/dev/null | wc -l)
+        started_tests=$(find "$RESULT_DIR" -name "simulator_out.txt" 2>/dev/null | wc -l)
         completed_tests=$([ -f "$COMPLETED_FILE" ] && wc -l < "$COMPLETED_FILE" || echo 0)
         running_tests=$(ps aux | grep -c "[e]mu.*--diff" || echo 0)
         
-        if [ "$total_tests" -gt 0 ] && [ "$completed_tests" -eq "$total_tests" ] && [ "$running_tests" -eq 0 ]; then
+        if [ "$completed_tests" -eq "$TOTAL_TESTS" ] && [ "$running_tests" -eq 0 ]; then
             echo ""
             echo "🎉 =============== 所有测试完成 =============== 🎉"
-            echo "✅ 总测试数: $total_tests"
+            echo "✅ 总测试数: $TOTAL_TESTS"
             echo "✅ 已完成: $completed_tests"
             echo "✅ 成功率: 100%"
             echo "⏰ 完成时间: $(date)"
